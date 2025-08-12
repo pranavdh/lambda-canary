@@ -36,7 +36,7 @@ jobs:
               --output text)
             echo "State: $STATE, LastUpdateStatus: $LASTUPDATE"
             if [ "$STATE" = "Active" ] && [ "$LASTUPDATE" = "Successful" ]; then
-              sleep 30
+              sleep 50
               break
             fi
             
