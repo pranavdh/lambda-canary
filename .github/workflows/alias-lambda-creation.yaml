@@ -30,7 +30,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    env:
+      CANARY_WEIGHT: ${{ inputs.canary_weight }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -112,7 +113,7 @@ jobs:
             --name ALIAS_STAGE1 \
             --function-version $LATEST_V1 \
 #           --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
-            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": ${{ inputs.canary_weight }}}}" \
+            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $CANARY_WEIGHT}}" \
             --description "ALIAS_STAGE1"
 
 
