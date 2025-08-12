@@ -1,0 +1,49 @@
+# This is a basic workflow to help you get started with Actions
+
+name: lambda-app-v2-deploy
+
+on:
+  workflow_run:
+    workflows: ["lambda-version-publish-app-v1"]   # Name of the workflow this workflow depends on
+    branches:
+      - main
+    types:
+      - completed           # Triggers after lambda-version-publish-app-v1 completes
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4    
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # integration with OIDC recommended
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # integration with OIDC recommended
+          aws-region: ${{ secrets.AWS_REGION }}
+
+
+      - name: Wait for Lambda creation to finish
+        run: |
+            STATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.State' \
+              --output text)
+            LASTUPDATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.LastUpdateStatus' \
+              --output text)
+            echo "State: $STATE, LastUpdateStatus: $LASTUPDATE"
+            if [ "$STATE" = "Active" ] && [ "$LASTUPDATE" = "Successful" ]; then
+              sleep 30
+              break
+            fi
+
+
+      - name: Update Lambda function app to version2
+        run: |
+          aws lambda update-function-code \
+            --function-name app \
+            --zip-file fileb://version2.zip

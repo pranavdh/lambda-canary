@@ -27,14 +27,14 @@ jobs:
       - name: Check if Lambda function exists
         run: |
           set +e
-          aws lambda get-function --function-name python-lambda2
+          aws lambda get-function --function-name app
           echo "existslambda=$?" > $GITHUB_ENV
 
       - name: Create Lambda base function
         if: env.existslambda == '254'  # Runs only if get-function failed (function does NOT exist)
         run: |
           aws lambda create-function \
-            --function-name python-lambda2 \
+            --function-name app \
             --runtime python3.9 \
             --zip-file fileb://base.zip \
             --handler lambda_function.handler \
@@ -43,7 +43,7 @@ jobs:
       - name: Check Lambda function state
         run: |
           STATE=$(aws lambda get-function \
-            --function-name python-lambda2 \
+            --function-name app \
             --query 'Configuration.State' \
             --output text)
           echo "Lambda state is: $STATE"
