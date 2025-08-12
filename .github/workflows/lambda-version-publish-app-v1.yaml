@@ -4,7 +4,7 @@ name: lambda-version-publish-app-v1
 
 on:
   workflow_run:
-    workflows: ["lambda-app-v1-deploy"]   # Name of the workflow in bootstrap.yml
+    workflows: ["lambda-app-v1-deploy"]    # Name of the workflow this workflow depends on
     branches:
       - main
     types:
@@ -50,4 +50,4 @@ jobs:
         if: env.existslambdaver == '254'  # Runs only if get-function failed (version1 does not exist)
         run: |
           aws lambda publish-version \
-            --function-name app01 --description "app v1"
+            --function-name app --description "app v1"

@@ -4,11 +4,11 @@ name: lambda-version-publish-app-v2
 
 on:
   workflow_run:
-    workflows: ["lambda-app-v2-deploy"]   # Name of the workflow this workflow depends on
+    workflows: ["lambda-version-publish-app-v1"]   # Name of the workflow this workflow depends on
     branches:
       - main
     types:
-      - completed           # Triggers after lambda-app-v2-deploy completes
+      - completed           # Triggers after lambda-version-publish-app-v1 completes
 
 jobs:
   deploy:
