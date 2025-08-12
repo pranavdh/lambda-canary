@@ -30,6 +30,31 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # integration with OIDC recommended
           aws-region: ${{ secrets.AWS_REGION }}
 
+
+###################################################################
+# wait 30 secs delay for lambda to get active and updates to get successful
+###################################################################
+
+      - name: Wait for Lambda updation to finish
+        run: |
+            STATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.State' \
+              --output text)
+            LASTUPDATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.LastUpdateStatus' \
+              --output text)
+            echo "State: $STATE, LastUpdateStatus: $LASTUPDATE"
+            if [ "$STATE" = "Active" ] && [ "$LASTUPDATE" = "Successful" ]; then
+              sleep 30
+              break
+            fi
+
+###################################################################
+# Get latest lambda version for "app v1" description
+###################################################################
+
       - name: Get latest app v1 Lambda version
         run: |
           LATEST_V1=$(aws lambda list-versions-by-function \
@@ -38,9 +63,7 @@ jobs:
             --output text)
           echo "LATEST_V1=$LATEST_V1" >> $GITHUB_ENV
           echo "Latest app v1 Lambda version is $LATEST_V1"
-        
-      - name: debug
-        run: echo "FUNCTION_NAME=$FUNCTION_NAME"
+
 
 ###################################################################
 # Get latest lambda version for "app v2" description
@@ -59,7 +82,19 @@ jobs:
 # Create alias with canary weights - stage 1 (90% "app v1" and 10% "app v2")
 ###################################################################
 
+
+      - name: Check if Lambda alias exists
+        id: check_alias
+        run: |
+          set +e
+          aws lambda get-alias --function-name app --name ALIAS_STAGE1
+          ALIAS_EXISTS=$?
+          echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
+          set -e
+
+
       - name: Lambda ALIAS_STAGE1
+        if: env.ALIAS_EXISTS != '0'
         run: |
           aws lambda create-alias \
             --function-name app \
