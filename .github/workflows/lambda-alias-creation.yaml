@@ -4,13 +4,12 @@ name: lambda-alias-creation
 
 on:
   workflow_run:
-    workflows:
-      - "lambda-app-v1-deploy"
-      - "lambda-app-v2-deploy"
+    workflows: ["lambda-version-publish-app-v2"]    # Name of the workflow this workflow depends on
     branches:
       - main
     types:
-      - completed           # Triggers after lambda-v2-deploy completes
+      - completed           # Triggers after lambda-version-publish-app-v2 completes
+
 
 jobs:
   deploy:
@@ -53,7 +52,7 @@ jobs:
           echo "Latest app v2 Lambda version is $LATEST_V2"
 
 ###################################################################
-# Create alias with canary weights
+# Create alias with canary weights - stage 1 (90% "app v1" and 10% "app v2")
 ###################################################################
 
       - name: Lambda ALIAS_STAGE1
