@@ -2,13 +2,24 @@
 
 name: alias-lambda-creation
 
+
+
 on:
-  workflow_run:
-    workflows: ["lambda-version-publish-app-v2"]   # Name of the workflow this workflow depends on
-    branches:
-      - main
-    types:
-      - completed           # Triggers after lambda-version-publish-app-v2 completes
+  workflow_dispatch:
+    inputs:
+      canary_weight:
+        description: "Weight (0.0 - 1.0) for app v2 traffic"
+        required: true
+        default: "0.10"
+
+
+# on:
+#   workflow_run:
+#     workflows: ["lambda-version-publish-app-v2"]   # Name of the workflow this workflow depends on
+#     branches:
+#       - main
+#     types:
+#       - completed           # Triggers after lambda-version-publish-app-v2 completes
 
 # on:
 #   push:
@@ -100,9 +111,22 @@ jobs:
             --function-name app \
             --name ALIAS_STAGE1 \
             --function-version $LATEST_V1 \
-            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
+#           --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
+            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": ${{ inputs.canary_weight }}}}" \
             --description "ALIAS_STAGE1"
-#          
+
+
+      # - name: Update alias
+      #   if: env.ALIAS_EXISTS == '0'
+      #   run: |
+      #     aws lambda update-alias \
+      #       --function-name "$FUNCTION_NAME" \
+      #       --name "$ALIAS_NAME" \
+      #       --function-version $LATEST_V1 \
+      #       --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": ${{ inputs.canary_weight }}}}" \
+      #       --description "Canary alias rollout updated to ${{ inputs.canary_weight }}"
+
+
 #       - name: Lambda ALIAS_STAGE1
 #         run: |
 #           aws lambda create-alias \
