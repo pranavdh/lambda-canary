@@ -50,4 +50,4 @@ jobs:
         if: env.existslambdaver == '254'  # Runs only if get-function failed (version2 does not exist)
         run: |
           aws lambda publish-version \
-            --function-name app --description "v2"
+            --function-name app --description "app v2"
