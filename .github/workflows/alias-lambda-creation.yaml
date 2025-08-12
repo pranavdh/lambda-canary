@@ -2,19 +2,19 @@
 
 name: alias-lambda-creation
 
-# on:
-#   workflow_run:
-#     workflows: ["lambda-version-publish-app-v2"]    # Name of the workflow this workflow depends on
-#     branches:
-#       - main
-#     types:
-#       - completed           # Triggers after lambda-version-publish-app-v2 completes
-
 on:
-  push:
+  workflow_run:
+    workflows: ["lambda-version-publish-app-v2"]   # Name of the workflow this workflow depends on
     branches:
       - main
-  workflow_dispatch:
+    types:
+      - completed           # Triggers after lambda-version-publish-app-v2 completes
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
 
 jobs:
   deploy:
