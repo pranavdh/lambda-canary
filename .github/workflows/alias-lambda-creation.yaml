@@ -196,7 +196,7 @@ jobs:
         id: check_alias_stage5
         run: |
           set +e
-          aws lambda get-alias --function-name app --name ALIAS_STAGE4
+          aws lambda get-alias --function-name app --name ALIAS_STAGE5
           ALIAS_EXISTS=$?
           echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
           set -e
