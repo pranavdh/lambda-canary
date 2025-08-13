@@ -95,17 +95,16 @@ jobs:
 ###################################################################
 
 
-      - name: Check if Lambda alias exists
-        id: check_alias
-        run: |
-          set +e
-          aws lambda get-alias --function-name app --name ALIAS_STAGE1
-          ALIAS_EXISTS=$?
-          echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
-          set -e
+      # - name: Check if Lambda alias exists
+      #   id: check_alias
+      #   run: |
+      #     set +e
+      #     aws lambda get-alias --function-name app --name ALIAS_STAGE1
+      #     ALIAS_EXISTS=$?
+      #     echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
+      #     set -e
 
-
-#       - name: Lambda ALIAS_STAGE1
+#       - name: Lambda alias stage1
 #         if: env.ALIAS_EXISTS != '0'
 #         run: |
 #           aws lambda create-alias \
