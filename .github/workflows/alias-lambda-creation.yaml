@@ -134,7 +134,7 @@ jobs:
           echo "The latest version of app v2 is : $LATEST_V2"
           aws lambda create-alias \
             --function-name app \
-            --name ALIAS_STAGE1 \
+            --name ALIAS_STAGE2 \
             --function-version $LATEST_V1 \
             --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.50}}" \
             --description "ALIAS_STAGE2"
