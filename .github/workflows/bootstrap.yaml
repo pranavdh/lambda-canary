@@ -1,0 +1,54 @@
+# This is a basic workflow to help you get started with Actions
+
+name: bootstrap
+
+# Controls when the workflow will run
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # integration with OIDC recommended
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # integration with OIDC recommended
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Check if Lambda function exists
+        run: |
+          set +e
+          aws lambda get-function --function-name app
+          echo "existslambda=$?" > $GITHUB_ENV
+
+      - name: Create Lambda base function
+        if: env.existslambda == '254'  # Runs only if get-function failed (function does NOT exist)
+        run: |
+          aws lambda create-function \
+            --function-name app \
+            --runtime python3.9 \
+            --zip-file fileb://base.zip \
+            --handler lambda_function.handler \
+            --role arn:aws:iam::332093714913:role/lambda-canary-execution-role
+
+      - name: Check Lambda function state
+        run: |
+          STATE=$(aws lambda get-function \
+            --function-name app \
+            --query 'Configuration.State' \
+            --output text)
+          echo "Lambda state is: $STATE"
+
+          if [ "$STATE" != "Active" ]; then
+            echo "Waiting for 30 seconds as Lambda is not active yet..."
+            sleep 30
+          fi
