@@ -115,6 +115,30 @@ jobs:
             --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
             --description "ALIAS_STAGE1"
 
+###################################################################
+# Create alias with canary weights - stage 2 (50% "app v1" and 50% "app v2")
+###################################################################
+
+      - name: Check if Lambda alias exists
+        id: check_alias
+        run: |
+          set +e
+          aws lambda get-alias --function-name app --name ALIAS_STAGE2
+          ALIAS_EXISTS=$?
+          echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
+          set -e
+
+      - name: Create Lambda alias stage2
+        if: env.ALIAS_EXISTS == '254'
+        run: |
+          echo "The latest version of app v2 is : $LATEST_V2"
+          aws lambda create-alias \
+            --function-name app \
+            --name ALIAS_STAGE1 \
+            --function-version $LATEST_V1 \
+            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.50}}" \
+            --description "ALIAS_STAGE1"
+
 
 #           aws lambda create-alias \
 #             --function-name app \
