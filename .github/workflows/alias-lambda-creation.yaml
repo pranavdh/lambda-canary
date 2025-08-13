@@ -104,9 +104,10 @@ jobs:
           echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
           set -e
 
-#       - name: Lambda alias stage1
-#         if: env.ALIAS_EXISTS != '0'
-#         run: |
+      - name: Lambda alias stage1
+        if: env.ALIAS_EXISTS != '0'
+        run: |
+          echo "working till here"
 #           aws lambda create-alias \
 #             --function-name app \
 #             --name ALIAS_STAGE1 \
