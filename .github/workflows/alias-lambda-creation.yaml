@@ -208,7 +208,6 @@ jobs:
             --function-name app \
             --name ALIAS_STAGE5 \
             --function-version $LATEST_V1 \
-            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V1\": 1.00}}" \
             --description "ALIAS_STAGE5"
 
 
