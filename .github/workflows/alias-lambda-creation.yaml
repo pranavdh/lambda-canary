@@ -104,28 +104,29 @@ jobs:
           echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
           set -e
 
-      - name: Update alias
-        if: env.ALIAS_EXISTS == '0'
+
+      - name: Lambda ALIAS_STAGE1
+        if: env.ALIAS_EXISTS != '0'
         run: |
-          aws lambda update-alias \
-            --function-name "$FUNCTION_NAME" \
-            --name "$ALIAS_NAME" \
+          aws lambda create-alias \
+            --function-name app \
+            --name ALIAS_STAGE1 \
             --function-version $LATEST_V1 \
-            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
-#            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": ${{ inputs.canary_weight }}}}" \
-#            --description "Canary alias rollout updated to ${{ inputs.canary_weight }}"
+           --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
+#            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $CANARY_WEIGHT}}" \
+            --description "ALIAS_STAGE1"
 
 
-#       - name: Lambda ALIAS_STAGE1
-#         if: env.ALIAS_EXISTS != '0'
-#         run: |
-#           aws lambda create-alias \
-#             --function-name app \
-#             --name ALIAS_STAGE1 \
-#             --function-version $LATEST_V1 \
-# #           --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
-#             --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $CANARY_WEIGHT}}" \
-#             --description "ALIAS_STAGE1"
+      # - name: Update alias
+      #   if: env.ALIAS_EXISTS == '0'
+      #   run: |
+      #     aws lambda update-alias \
+      #       --function-name "$FUNCTION_NAME" \
+      #       --name "$ALIAS_NAME" \
+      #       --function-version $LATEST_V1 \
+      #       --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
+      #       --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": ${{ inputs.canary_weight }}}}" \#            --description "Canary alias rollout updated to ${{ inputs.canary_weight }}"
+
 
 
 
