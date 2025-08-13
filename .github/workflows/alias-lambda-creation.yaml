@@ -95,8 +95,8 @@ jobs:
 ###################################################################
 
 
-      - name: Check if Lambda alias exists
-        id: check_alias
+      - name: Check if Lambda alias ALIAS_STAGE1 exists
+        id: check_alias_stage1
         run: |
           set +e
           aws lambda get-alias --function-name app --name ALIAS_STAGE1
@@ -119,8 +119,8 @@ jobs:
 # Create alias with canary weights - stage 2 (50% "app v1" and 50% "app v2")
 ###################################################################
 
-      - name: Check if Lambda alias exists
-        id: check_alias
+      - name: Check if Lambda alias ALIAS_STAGE2 exists
+        id: check_alias_stage2
         run: |
           set +e
           aws lambda get-alias --function-name app --name ALIAS_STAGE2
