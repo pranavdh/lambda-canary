@@ -105,9 +105,8 @@ jobs:
           set -e
 
       - name: Create Lambda alias stage1
-        if: env.ALIAS_EXISTS != '0'
+        if: env.ALIAS_EXISTS == '254'
         run: |
-          echo "working till here"
           echo "The latest version of app v2 is : $LATEST_V2"
           aws lambda create-alias \
             --function-name app \
