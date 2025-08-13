@@ -47,21 +47,21 @@ jobs:
 # wait 30 secs delay for lambda to get active and updates to get successful
 ###################################################################
 
-      # - name: Wait for Lambda updation to finish
-      #   run: |
-      #       STATE=$(aws lambda get-function \
-      #         --function-name app \
-      #         --query 'Configuration.State' \
-      #         --output text)
-      #       LASTUPDATE=$(aws lambda get-function \
-      #         --function-name app \
-      #         --query 'Configuration.LastUpdateStatus' \
-      #         --output text)
-      #       echo "State: $STATE, LastUpdateStatus: $LASTUPDATE"
-      #       if [ "$STATE" = "Active" ] && [ "$LASTUPDATE" = "Successful" ]; then
-      #         sleep 30
-      #         break
-      #       fi
+      - name: Wait for Lambda updation to finish
+        run: |
+            STATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.State' \
+              --output text)
+            LASTUPDATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.LastUpdateStatus' \
+              --output text)
+            echo "State: $STATE, LastUpdateStatus: $LASTUPDATE"
+            if [ "$STATE" = "Active" ] && [ "$LASTUPDATE" = "Successful" ]; then
+              sleep 30
+              break
+            fi
 
 ###################################################################
 # Get latest lambda version for "app v1" description
