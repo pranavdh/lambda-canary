@@ -4,11 +4,11 @@ name: lambda-app-v2-deploy
 
 on:
   workflow_run:
-    workflows: ["lambda-version-publish-app-v1"]   # Name of the workflow this workflow depends on
+    workflows: ["lambda-app-v1-deploy"]   # Name of the workflow this workflow depends on
     branches:
       - main
     types:
-      - completed           # Triggers after lambda-version-publish-app-v1 completes
+      - completed           # Triggers after lambda-app-v1-deploy completes
 
 jobs:
   deploy:
@@ -47,3 +47,37 @@ jobs:
           aws lambda update-function-code \
             --function-name app \
             --zip-file fileb://version2.zip
+
+
+
+######################################################################################
+# Lambda "app v2" publish
+######################################################################################
+
+      - name: Wait for Lambda updation to finish
+        run: |
+            STATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.State' \
+              --output text)
+            LASTUPDATE=$(aws lambda get-function \
+              --function-name app \
+              --query 'Configuration.LastUpdateStatus' \
+              --output text)
+            echo "State: $STATE, LastUpdateStatus: $LASTUPDATE"
+            if [ "$STATE" = "Active" ] && [ "$LASTUPDATE" = "Successful" ]; then
+              sleep 50
+              break
+            fi
+            
+      # - name: Check if Lambda version2 exists
+      #   run: |
+      #     set +e
+      #     aws lambda get-function --function-name app --qualifier 2
+      #     echo "existslambdaver=$?" >> $GITHUB_ENV
+
+      - name: Create Lambda version v2
+#        if: env.existslambdaver == '254'  # Runs only if get-function failed (version2 does not exist)
+        run: |
+          aws lambda publish-version \
+            --function-name app --description "app v2"
