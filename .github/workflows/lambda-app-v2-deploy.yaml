@@ -24,7 +24,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # integration with OIDC recommended
           aws-region: ${{ secrets.AWS_REGION }}
 
-
+#
       - name: Wait for Lambda creation to finish
         run: |
             STATE=$(aws lambda get-function \
