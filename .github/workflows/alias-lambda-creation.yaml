@@ -94,6 +94,7 @@ jobs:
 # Create alias with canary weights - stage 1 (90% "app v1" and 10% "app v2")
 ###################################################################
 
+#
 
       - name: Check if Lambda alias ALIAS_STAGE1 exists
         id: check_alias_stage1
