@@ -239,7 +239,7 @@ jobs:
 
 
       - name: Check if Lambda alias ALIAS_PROD_ROLLBACK exists
-        id: check_alias_rollback
+        id: check_alias_rollback_create
         run: |
           set +e
           aws lambda get-alias --function-name app --name ALIAS_PROD_ROLLBACK
@@ -265,7 +265,7 @@ jobs:
 ###################################################################
 
       - name: Check if Lambda alias ALIAS_PROD_ROLLBACK exists
-        id: check_alias_rollback
+        id: check_alias_rollback_update
         run: |
           set +e
           aws lambda get-alias --function-name app --name ALIAS_PROD_ROLLBACK
