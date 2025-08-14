@@ -2,23 +2,28 @@
 
 name: alias-lambda-creation
 
-
+          # - "app v1 (100% to 'app v1' | MANUAL ROLLBACK | point to 'app v1')"
+          # - "0.10 (10% to 'app v2' | Canary Deployment | ALIAS_STAGE1)"
+          # - "0.50 (50% to 'app v2' | Canary Deployment | ALIAS_STAGE2)"
+          # - "0.90 (90% to 'app v2' | Canary Deployment | ALIAS_STAGE3)"
+          # - "1.0 (100% to 'app v2' | Canary Deployment | ALIAS_STAGE4)"
+          # - "app v2  (100% to 'app v2' | Promote Canary | ALIAS_STAGE5 directly pointing to 'app v2')"
 
 on:
   workflow_dispatch:
     inputs:
       canary_weight:
-        description: "Weight (0.0 - 1.0) for app v2 traffic. Note- 0.1 for 10%, 0.5 for 50% and 0.9 for 90%"
+        description: "Canary Weight (0.0 - 1.0) traffic for app v2. 0.10=10%, 0.50=50%, 0.90=90%, 1.0=100%, rollback_v1=100% to app v1, direct_v2=100% to app v2"
         required: true
         default: "0.10"
         type: choice
         options:
-          - "app v1 (100% to 'app v1' | MANUAL ROLLBACK | point to 'app v1')"
-          - "0.10 (10% to 'app v2' | Canary Deployment | ALIAS_STAGE1)"
-          - "0.50 (50% to 'app v2' | Canary Deployment | ALIAS_STAGE2)"
-          - "0.90 (90% to 'app v2' | Canary Deployment | ALIAS_STAGE3)"
-          - "1.0 (100% to 'app v2' | Canary Deployment | ALIAS_STAGE4)"
-          - "app v2  (100% to 'app v2' | Promote Canary | ALIAS_STAGE5 directly pointing to 'app v2')"
+          - "rollback_v1"
+          - "0.10"
+          - "0.50"
+          - "0.90"
+          - "1.0"
+          - "direct_v2"
         notify:
           description: 'Notify Approver on Email ?'
           required: true
@@ -47,8 +52,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # env:
-    #   CANARY_WEIGHT: ${{ inputs.canary_weight }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -203,7 +206,7 @@ jobs:
             --function-name app \
             --name ALIAS_STAGE4 \
             --function-version $LATEST_V1 \
-            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.90}}" \
+            --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 1.00}}" \
             --description "ALIAS_STAGE4"
 
 
@@ -226,8 +229,96 @@ jobs:
           aws lambda create-alias \
             --function-name app \
             --name ALIAS_STAGE5 \
-            --function-version $LATEST_V1 \
+            --function-version $LATEST_V2 \
             --description "ALIAS_STAGE5"
+
+
+###################################################################
+# Create alias (ALIAS_PROD_ROLLBACK) for manual rollback - github actions workflow_dispatch
+###################################################################
+
+
+      - name: Check if Lambda alias ALIAS_PROD_ROLLBACK exists
+        id: check_alias_rollback
+        run: |
+          set +e
+          aws lambda get-alias --function-name app --name ALIAS_PROD_ROLLBACK
+          ALIAS_EXISTS=$?
+          echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
+          set -e
+
+
+      - name: Create Lambda alias ALIAS_PROD_ROLLBACK
+        if: env.ALIAS_EXISTS == '254'
+        run: |
+          aws lambda create-alias \
+            --function-name app \
+            --name ALIAS_PROD_ROLLBACK \
+            --function-version $LATEST_V2 \
+            --description "ALIAS_PROD_ROLLBACK for alias based on selected rollout of alias weights or rollback"
+
+
+
+###################################################################
+# Update alias (ALIAS_PROD_ROLLBACK) for manual rollback
+# with github actions workflow_dispatch
+###################################################################
+
+      - name: Check if Lambda alias ALIAS_PROD_ROLLBACK exists
+        id: check_alias_rollback
+        run: |
+          set +e
+          aws lambda get-alias --function-name app --name ALIAS_PROD_ROLLBACK
+          ALIAS_EXISTS=$?
+          echo "ALIAS_EXISTS=$ALIAS_EXISTS" >> $GITHUB_ENV
+          set -e
+
+
+      - name: update Lambda alias ALIAS_PROD_ROLLBACK
+        if: env.ALIAS_EXISTS == '0'
+        run: |
+          STAGE="${{ github.event.inputs.canary_weight }}"
+          echo "Selected rollout_stage = $STAGE"
+          if [[ "$STAGE" == "rollback_v1" ]]; then
+            echo "Rolling back: pointing ALIAS_PROD_ROLLBACK to 100% app v1 (version $LATEST_V1)"
+            aws lambda update-alias \
+              --function-name app \
+              --name ALIAS_PROD_ROLLBACK \
+              --function-version $LATEST_V1 \
+              --description "Rolled back to 100% app v1"
+          elif [[ "$STAGE" == "1.0" ]]; then
+            echo "Cutting over: pointing ALIAS_PROD_ROLLBACK to 100% app v2 (version $LATEST_V2)"
+            aws lambda update-alias \
+              --function-name app \
+              --name ALIAS_PROD_ROLLBACK \
+              --function-version $LATEST_V1 \
+              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $STAGE}}" \
+              --description "Rolled back to 100% app v2"
+          elif [[ "$STAGE" == "direct_v2" ]]; then
+            echo "Cutting over: pointing ALIAS_PROD_ROLLBACK to 100% app v2 (version $LATEST_V2)"
+            aws lambda update-alias \
+              --function-name app \
+              --name ALIAS_PROD_ROLLBACK \
+              --function-version $LATEST_V2 \
+              --description "Rolled back to 100% app v2"
+          else
+            echo "Incremental canary rollout: routing $STAGE traffic to alias ALIAS_PROD_ROLLBACK"          
+            aws lambda update-alias \
+              --function-name app \
+              --name ALIAS_PROD_ROLLBACK \
+              --function-version $LATEST_V1 \
+              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $STAGE}}" \
+              --description "Canary rollout with $STAGE traffic to alias ALIAS_PROD_ROLLBACK"
+
+          fi
+      #       aws lambda update-alias \
+      #       --function-name "$FUNCTION_NAME" \
+      #       --name "$ALIAS_NAME" \
+      #       --function-version $LATEST_V1 \
+      #       --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": 0.10}}" \
+      #       --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": ${{ inputs.canary_weight }}}}" \#            --description "Canary alias rollout updated to ${{ inputs.canary_weight }}"
+
+
 
 
 #           aws lambda create-alias \
