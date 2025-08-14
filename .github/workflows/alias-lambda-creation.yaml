@@ -8,9 +8,18 @@ on:
   workflow_dispatch:
     inputs:
       canary_weight:
-        description: "Weight (0.0 - 1.0) for app v2 traffic"
+        description: "Weight (0.0 - 1.0) for app v2 traffic. Note- 0.1 for 10%, 0.5 for 50% and 0.9 for 90%"
         required: true
         default: "0.10"
+        type: choice
+        options:
+          - "0.10"
+          - "0.50"
+          - "0.90"
+          - "1.0"
+          - "app v1"
+          - "app v2"
+
 
 #
 # on:
