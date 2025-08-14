@@ -19,8 +19,15 @@ on:
           - "0.90 (90% to 'app v2' | Canary Deployment | ALIAS_STAGE3)"
           - "1.0 (100% to 'app v2' | Canary Deployment | ALIAS_STAGE4)"
           - "app v2  (100% to 'app v2' | Promote Canary | ALIAS_STAGE5 directly pointing to 'app v2')"
-
-
+        notify:
+          description: 'Notify Approver on Email ?'
+          required: true
+          type: boolean
+          default: true
+        # environment:
+        #   description: 'Environment type - APIGW Stages - DEV --> RELEASE --> STAGE'
+        #   type: environment
+        #   required: false
 
 #
 # on:
