@@ -4,22 +4,22 @@ name: alias-lambda-creation
 
 
 
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       canary_weight:
-#         description: "Weight (0.0 - 1.0) for app v2 traffic"
-#         required: true
-#         default: "0.10"
+on:
+  workflow_dispatch:
+    inputs:
+      canary_weight:
+        description: "Weight (0.0 - 1.0) for app v2 traffic"
+        required: true
+        default: "0.10"
 
 #
-on:
-  workflow_run:
-    workflows: ["lambda-app-v2-deploy"]   # Name of the workflow this workflow depends on
-    branches:
-      - main
-    types:
-      - completed           # Triggers after lambda-app-v2-deploy completes
+# on:
+#   workflow_run:
+#     workflows: ["lambda-app-v2-deploy"]   # Name of the workflow this workflow depends on
+#     branches:
+#       - main
+#     types:
+#       - completed           # Triggers after lambda-app-v2-deploy completes
 
 # on:
 #   push:
@@ -30,8 +30,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      CANARY_WEIGHT: ${{ inputs.canary_weight }}
+    # env:
+    #   CANARY_WEIGHT: ${{ inputs.canary_weight }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -107,6 +107,7 @@ jobs:
       - name: Create Lambda alias stage1
         if: env.ALIAS_EXISTS == '254'
         run: |
+          echo "${{ github.event.inputs.}}"
           echo "The latest version of app v2 is : $LATEST_V2"
           aws lambda create-alias \
             --function-name app \
