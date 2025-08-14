@@ -107,7 +107,7 @@ jobs:
       - name: Create Lambda alias stage1
         if: env.ALIAS_EXISTS == '254'
         run: |
-          echo "${{ github.event.inputs.}}"
+          echo "${{ github.event.inputs.canary_weight}}"
           echo "The latest version of app v2 is : $LATEST_V2"
           aws lambda create-alias \
             --function-name app \
