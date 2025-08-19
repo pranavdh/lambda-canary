@@ -300,7 +300,7 @@ jobs:
             aws lambda update-alias \
               --function-name app \
               --name ALIAS_PROD_ROLLBACK \
-              --function-version $LATEST_V2 \
+              --function-version "$LATEST_V2" \
               --description "Rolled back to 100% app v2"
           else
             echo "Incremental canary rollout: routing $STAGE traffic to alias ALIAS_PROD_ROLLBACK"          
