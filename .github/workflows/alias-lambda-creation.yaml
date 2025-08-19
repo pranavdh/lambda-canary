@@ -284,8 +284,8 @@ jobs:
             aws lambda update-alias \
               --function-name app \
               --name ALIAS_PROD_ROLLBACK \
-              --function-version $LATEST_V2 \
-              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V1\": $STAGE}}" \
+              --function-version $LATEST_V1 \
+#              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V1\": $STAGE}}" \
               --description "Rolled back to 100% app v1"
           elif [[ "$STAGE" == "1.0" ]]; then
             echo "Cutting over: pointing ALIAS_PROD_ROLLBACK to 100% app v2 (version $LATEST_V2)"
@@ -293,14 +293,14 @@ jobs:
               --function-name app \
               --name ALIAS_PROD_ROLLBACK \
               --function-version $LATEST_V1 \
-#              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $STAGE}}" \
+              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $STAGE}}" \
               --description "Rolled back to 100% app v2"
           elif [[ "$STAGE" == "direct_v2" ]]; then
             echo "Cutting over: pointing ALIAS_PROD_ROLLBACK to 100% app v2 (version $LATEST_V2)"
             aws lambda update-alias \
               --function-name app \
               --name ALIAS_PROD_ROLLBACK \
-              --function-version $LATEST_V1 \
+              --function-version $LATEST_V2 \
 #              --routing-config "{\"AdditionalVersionWeights\": {\"$LATEST_V2\": $STAGE}}" \
               --description "Rolled forwarded to 100% app v2"
           else
