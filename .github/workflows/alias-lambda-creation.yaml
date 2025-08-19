@@ -285,6 +285,7 @@ jobs:
               --function-name app \
               --name ALIAS_PROD_ROLLBACK \
               --function-version $LATEST_V1 \
+              --routing-config '{"AdditionalVersionWeights": {}}' \
               --description "Rolled back to 100% app v1"
           elif [[ "$STAGE" == "1.0" ]]; then
             echo "Cutting over: pointing ALIAS_PROD_ROLLBACK to 100% app v2 (version $LATEST_V2)"
@@ -300,7 +301,8 @@ jobs:
               --function-name app \
               --name ALIAS_PROD_ROLLBACK \
               --function-version $LATEST_V2 \
-              --description "Rolled back to 100% app v2"
+              --routing-config '{"AdditionalVersionWeights": {}}' \
+              --description "Roll-forward to 100% app v2"
           else
             echo "Incremental canary rollout: routing $STAGE traffic to alias ALIAS_PROD_ROLLBACK"          
             aws lambda update-alias \
