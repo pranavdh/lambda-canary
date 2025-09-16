@@ -42,7 +42,7 @@ on:
 #       - main
 #     types:
 #       - completed           # Triggers after lambda-app-v2-deploy completes
-
+#
 # on:
 #   push:
 #     branches:
